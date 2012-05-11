@@ -1,0 +1,14 @@
+
+standalone uwsgi
+    uwsgi -H env --:9090 --enable-threads -w main --callable app
+
+
+nginx uwsgi
+    uwsgi -H env --socket 127.0.0.1:3031 --enable-threads -w main --callable app
+    
+ nginx
+            location / {
+                include uwsgi_params;
+                uwsgi_pass 127.0.0.1:3031;
+            }
+

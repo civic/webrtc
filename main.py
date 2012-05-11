@@ -1,4 +1,4 @@
-#!/home/t_sasaki/webapp2/env/bin/python
+#!env/bin/python
 
 import webapp2
 
