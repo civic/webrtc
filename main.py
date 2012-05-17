@@ -20,13 +20,17 @@ class HelloWebapp2(BaseHandler):
     self.response.write("Hello, webapp2!!!")
     self.response.write(json.encode({"hello": "World"}))
 
-    context = {"message": "Hello WOrld"}
+    context = {"message": "Hello WORLD"}
     self.render_response("template.html", **context)
 
 
-app = webapp2.WSGIApplication([
-  ('/', HelloWebapp2),
-  ], debug=True)
+app = webapp2.wsgiapplication([
+  ('/', hellowebapp2),
+  ], debug=true
+   , config={'webapp2_extras.jinja2': {
+        'template_path': ['.']
+      }
+    })
 
 def main():
   from paste import httpserver

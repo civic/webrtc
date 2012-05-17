@@ -1,0 +1,402 @@
+Usage: /Users/t_sasaki/Study/Python/webapp2/env/bin/uwsgi [options...]
+    -s|--socket                           bind to the specified UNIX/TCP socket using default protocol
+    -s|--uwsgi-socket                     bind to the specified UNIX/TCP socket using uwsgi protocol
+    --http-socket                         bind to the specified UNIX/TCP socket using HTTP protocol
+    --fastcgi-socket                      bind to the specified UNIX/TCP socket using FastCGI protocol
+    --protocol                            force the specified protocol for default sockets
+    --socket-protocol                     force the specified protocol for default sockets
+    --shared-socket                       create a shared sacket for advanced jailing or ipc
+    -p|--processes                        spawn the specified number of workers/processes
+    -p|--workers                          spawn the specified number of workers/processes
+    -t|--harakiri                         set harakiri timeout
+    --harakiri-verbose                    enable verbose mode for harakiri
+    --harakiri-no-arh                     do not enable harakiri during after-request-hook
+    --no-harakiri-arh                     do not enable harakiri during after-request-hook
+    --no-harakiri-after-req-hook          do not enable harakiri during after-request-hook
+    --backtrace-depth                     set backtrace depth
+    --spooler-harakiri                    set harakiri timeout for spooler tasks
+    --mule-harakiri                       set harakiri timeout for mule tasks
+    -x|--xmlconfig                        load config from xml file
+    -x|--xml                              load config from xml file
+    --skip-zero                           skip check of file descriptor 0
+    -S|--set                              set a custom placeholder
+    --for                                 (opt logic) for cycle
+    --endfor                              (opt logic) end for cycle
+    --if-env                              (opt logic) check for environment variable
+    --if-not-env                          (opt logic) check for environment variable
+    --ifenv                               (opt logic) check for environment variable
+    --if-reload                           (opt logic) check for reload
+    --if-not-reload                       (opt logic) check for reload
+    --if-exists                           (opt logic) check for file/directory existance
+    --if-not-exists                       (opt logic) check for file/directory existance
+    --ifexists                            (opt logic) check for file/directory existance
+    --if-file                             (opt logic) check for file existance
+    --if-not-file                         (opt logic) check for file existance
+    --if-dir                              (opt logic) check for directory existance
+    --if-not-dir                          (opt logic) check for directory existance
+    --ifdir                               (opt logic) check for directory existance
+    --if-directory                        (opt logic) check for directory existance
+    --endif                               (opt logic) end if
+    --ignore-sigpipe                      do not report (annoying) SIGPIPE
+    --ignore-write-errors                 do not report (annoying) write()/writev() errors
+    --write-errors-tolerance              set the maximum number of allowed write errors (default: no tolerance)
+    --write-errors-exception-only         only raise an exception on write errors giving control to the app itself
+    --disable-write-exception             disable exception generation on write()/writev()
+    --inherit                             use the specified file as config template
+    -d|--daemonize                        daemonize uWSGI
+    --daemonize2                          daemonize uWSGI after app loading
+    --stop                                stop an instance
+    --reload                              reload an instance
+    --pause                               pause an instance
+    --suspend                             suspend an instance
+    --resume                              resume an instance
+    -l|--listen                           set the socket listen queue size
+    -v|--max-vars                         set the amount of internal iovec/vars structures
+    -b|--buffer-size                      set internal buffer size
+    -m|--memory-report                    enable memory report
+    --profiler                            enable the specified profiler
+    -c|--cgi-mode                         force CGI-mode for plugins supporting it
+    -a|--abstract-socket                  force UNIX socket in abstract mode (Linux only)
+    -C|--chmod-socket                     chmod-socket
+    -C|--chmod                            chmod-socket
+    --chown-socket                        chown unix sockets
+    --umask                               set umask
+    --map-socket                          map sockets to specific workers
+    -T|--enable-threads                   enable threads
+    --auto-procname                       automatically set processes name to something meaningful
+    --procname-prefix                     add a prefix to the process names
+    --procname-prefix-spaced              add a spaced prefix to the process names
+    --procname-append                     append a string to process names
+    --procname                            set process names
+    --procname-master                     set master process name
+    -i|--single-interpreter               do not use multiple interpreters (where available)
+    --need-app                            exit if no app can be loaded
+    -M|--master                           enable master process
+    --emperor                             run the Emperor
+    --emperor-tyrant                      put the Emperor in Tyrant mode
+    --emperor-stats                       run the Emperor stats server
+    --emperor-stats-server                run the Emperor stats server
+    --early-emperor                       spawn the emperor as soon as possibile
+    --emperor-broodlord                   run the emperor in BroodLord mode
+    --emperor-amqp-vhost                  set emperor amqp virtualhost
+    --emperor-amqp-username               set emperor amqp username
+    --emperor-amqp-password               set emperor amqp password
+    --emperor-throttle                    throttle each vassal spawn (in seconds)
+    --emperor-magic-exec                  prefix vassals config files with exec:// if they have the executable bit
+    --vassals-inherit                     add config templates to vassals config
+    --vassals-start-hook                  run the specified command before each vassal starts
+    --vassals-stop-hook                   run the specified command after vassal's death
+    --vassal-sos-backlog                  ask emperor for sos if backlog queue has more items than the value specified
+    --auto-snapshot                       automatically make workers snaphost after reload
+    --reload-mercy                        set the maximum time (in seconds) a worker can take to reload/shutdown
+    --exit-on-reload                      force exit even if a reload is requested
+    --die-on-term                         exit instead of brutal reload on SIGTERM
+    -h|--help                             show this help
+    -h|--usage                            show this help
+    -r|--reaper                           call waitpid(-1,...) after each request to get rid of zombies
+    -R|--max-requests                     reload workers after the specified amount of managed requests
+    -z|--socket-timeout                   set internal sockets timeout
+    --no-fd-passing                       disable file descriptor passing
+    --locks                               create the specified number of shared locks
+    --lock-engine                         set the lock engine
+    --ftok                                set the ipcsem key via ftok() for avoiding duplicates
+    -A|--sharedarea                       create a raw shared memory area of specified pages
+    --cache                               create a shared cache containing given elements
+    --cache-blocksize                     set cache blocksize
+    --cache-store                         enable persistent cache to disk
+    --cache-store-sync                    set frequency of sync for persistent cache
+    --cache-server                        enable the threaded cache server
+    --cache-server-threads                set the number of threads for the cache server
+    --cache-no-expire                     disable auto sweep of expired items
+    --cache-expire-freq                   set the frequency of cache sweeper scans (default 3 seconds)
+    --cache-report-freed-items            constantly report the cache item freed by the sweeper (use only for debug)
+    --queue                               enable shared queue
+    --queue-blocksize                     set queue blocksize
+    --queue-store                         enable persistent queue to disk
+    --queue-store-sync                    set frequency of sync for persistent queue
+    -Q|--spooler                          run a spooler on the specified directory
+    --spooler-ordered                     try to order the execution of spooler tasks
+    --spooler-chdir                       chdir() to specified directory before each spooler task
+    --spooler-processes                   set the number of processes for spoolers
+    --spooler-quiet                       do not be verbose with spooler tasks
+    --spooler-max-tasks                   set the maximum number of tasks to run before recycling a spooler
+    --mule                                add a mule
+    --mules                               add the specified number of mules
+    --farm                                add a mule farm
+    --signal                              send a uwsgi signal to a server
+    --signal-bufsize                      set buffer size for signal queue
+    --signals-bufsize                     set buffer size for signal queue
+    -L|--disable-logging                  disable request logging
+    --flock                               lock the specified file before starting, exit if locked
+    --flock-wait                          lock the specified file before starting, wait if locked
+    --flock2                              lock the specified file after logging/daemon setup, exit if locked
+    --flock-wait2                         lock the specified file after logging/daemon setup, wait if locked
+    --pidfile                             create pidfile (before privileges drop)
+    --pidfile2                            create pidfile (after privileges drop)
+    --chroot                              chroot() to the specified directory
+    --uid                                 setuid to the specified user/uid
+    --gid                                 setgid to the specified group/gid
+    --no-initgroups                       disable additional groups set via initgroups()
+    --exec-pre-jail                       run the specified command before jailing
+    --exec-post-jail                      run the specified command after jailing
+    --exec-in-jail                        run the specified command in jail after initialization
+    --exec-as-root                        run the specified command before privileges drop
+    --exec-as-user                        run the specified command after privileges drop
+    --exec-as-user-atexit                 run the specified command before app exit and reload
+    --exec-pre-app                        run the specified command before app loading
+    --ini                                 load config from ini file
+    -y|--yaml                             load config from yaml file
+    -y|--yal                              load config from yaml file
+    --sqlite3                             load config from sqlite3 db
+    --sqlite                              load config from sqlite3 db
+    --ldap                                load configuration from ldap server
+    --ldap-schema                         dump uWSGI ldap schema
+    --ldap-schema-ldif                    dump uWSGI ldap schema in ldif format
+    --weight                              weight of the instance (used by clustering/lb/subscriptions)
+    --auto-weight                         set weight of the instance (used by clustering/lb/subscriptions) automatically
+    --no-server                           force no-server mode
+    --command-mode                        force command mode
+    --no-defer-accept                     disable deferred-accept on sockets
+    --limit-as                            limit processes address space/vsz
+    --reload-on-as                        reload if address space is higher than specified megabytes
+    --reload-on-rss                       reload if rss memory is higher than specified megabytes
+    --evil-reload-on-as                   force the master to reload a worker if its address space is higher than specified megabytes
+    --evil-reload-on-rss                  force the master to reload a worker if its rss memory is higher than specified megabytes
+    --never-swap                          lock all memory pages avoiding swapping
+    --touch-reload                        reload uWSGI if the specified file is modified/touched
+    --touch-logrotate                     trigger logrotation if the specified file is modified/touched
+    --touch-logreopen                     trigger log reopen if the specified file is modified/touched
+    --propagate-touch                     over-engineering option for system with flaky signal mamagement
+    --limit-post                          limit request body
+    --no-orphans                          automatically kill workers if master dies (can be dangerous for availability)
+    --prio                                set processes/threads priority
+    --cpu-affinity                        set cpu affinity
+    --post-buffering                      enable post buffering
+    --post-buffering-bufsize              set buffer size for read() in post buffering mode
+    --upload-progress                     enable creation of .json files in the specified directory during a file upload
+    --no-default-app                      do not fallback to default app
+    --manage-script-name                  automatically rewrite SCRIPT_NAME and PATH_INFO
+    --ignore-script-name                  ignore SCRIPT_NAME
+    --catch-exceptions                    report exception has http output (discouraged)
+    --reload-on-exception                 reload a worker when an exception is raised
+    --reload-on-exception-type            reload a worker when a specific exception type is raised
+    --reload-on-exception-value           reload a worker when a specific exception value is raised
+    --reload-on-exception-repr            reload a worker when a specific exception type+value (language-specific) is raised
+    --udp                                 run the udp server on the specified address
+    --stats                               enable the stats server on the specified address
+    --stats-server                        enable the stats server on the specified address
+    --multicast                           subscribe to specified multicast group
+    --cluster                             join specified uWSGI cluster
+    --cluster-nodes                       get nodes list from the specified cluster
+    --cluster-reload                      send a reload message to the cluster
+    --cluster-log                         send a log line to the cluster
+    --subscribe-to                        subscribe to the specified subscription server
+    --st                                  subscribe to the specified subscription server
+    --subscribe                           subscribe to the specified subscription server
+    --subscribe-freq                      send subscription announce at the specified interval
+    --subscription-tolerance              set tolerance for subscription servers
+    --unsubscribe-on-graceful-reload      force unsubscribe request even during graceful reload
+    --snmp                                enable the embedded snmp server
+    --snmp-community                      set the snmp community string
+    --check-interval                      set the interval (in seconds) of master checks
+    --forkbomb-delay                      sleep for the specified number of seconds when a forkbomb is detected
+    --binary-path                         force binary path
+    --async                               enable async mode with specified cores
+    --max-fd                              set maximum number of file descriptors (requires root privileges)
+    --logto                               set logfile/udp address
+    --logto2                              log to specified file or udp address after privileges drop
+    --logfile-chown                       chown logfiles
+    --logfile-chmod                       chmod logfiles
+    --log-syslog                          log to syslog
+    --log-socket                          send logs to the specified socket
+    --logger                              set logger system
+    --threaded-logger                     offload log writing to a thread
+    --log-master                          delegate logging to master process
+    --log-reopen                          reopen log after reload
+    --log-truncate                        truncate log on startup
+    --log-maxsize                         set maximum logfile size
+    --log-backupname                      set logfile name after rotation
+    --logdate                             prefix logs with date or a strftime string
+    --log-date                            prefix logs with date or a strftime string
+    --log-prefix                          prefix logs with a string
+    --log-zero                            log responses without body
+    --log-slow                            log requestes slower than the specified numbr of seconds
+    --log-4xx                             log requests with a 4xx response
+    --log-5xx                             log requests with a 5xx response
+    --log-big                             log requestes bigger than the specified size
+    --log-sendfile                        log sendfile requests
+    --log-micros                          report response time in microseconds instead of milliseconds
+    --log-x-forwarded-for                 use the ip from X-Forwarded-For header instead of REMOTE_ADDR
+    --master-as-root                      leave master process running as root
+    --chdir                               chdir to specified directory before apps loading
+    --chdir2                              chdir to specified directory after apps loading
+    --lazy                                set lazy mode (load apps in workers instead of master)
+    --cheap                               set cheap mode (spawn workers only after the first request)
+    --cheaper                             set cheaper mode (adaptive process spawning)
+    --cheaper-algo                        choose to algorithm used for adaptive process spawning)
+    --cheaper-step                        number of additional processes to spawn at each overload
+    --cheaper-overload                    increase workers after specified overload
+    --idle                                set idle mode (put uWSGI in cheap mode after inactivity)
+    --die-on-idle                         shutdown uWSGI when idle
+    --mount                               load application under mountpoint
+    --regexp-mount                        load application under a regexp-based mountpoint
+    --grunt                               enable grunt mode (in-request fork)
+    --threads                             run each worker in prethreaded mode with the specified number of threads
+    --thread-stacksize                    set threads stacksize
+    --threads-stacksize                   set threads stacksize
+    --thread-stack-size                   set threads stacksize
+    --threads-stack-size                  set threads stacksize
+    --vhost                               enable virtualhosting mode (based on SERVER_NAME variable)
+    --vhost-host                          enable virtualhosting mode (based on HTTP_HOST variable)
+    --route                               add a route
+    --route-host                          add a route based on Host header
+    --route-uri                           add a route based on REQUEST_URI
+    --route-qs                            add a route based on QUERY_STRING
+    --add-header                          automatically add HTTP headers to response
+    --check-static                        check for static files in the specified directory
+    --check-static-docroot                check for static files in the requested DOCUMENT_ROOT
+    --static-check                        check for static files in the specified directory
+    --static-map                          map mountpoint to static directory (or file)
+    --static-map2                         like static-map but completely appending the requested resource to the docroot
+    --static-skip-ext                     skip specified extension from staticfile checks
+    --static-index                        search for specified file if a directory is requested
+    --mimefile                            set mime types file path (default /etc/mime.types)
+    --mime-file                           set mime types file path (default /etc/mime.types)
+    --static-expires-type                 set the Expires header based on content type
+    --static-expires-type-mtime           set the Expires header based on content type and file mtime
+    --static-expires                      set the Expires header based on filename regexp
+    --static-expires-mtime                set the Expires header based on filename regexp and file mtime
+    --static-offload-to-thread            offload static file serving to a thread (upto the specified number of threads)
+    --file-serve-mode                     set static file serving mode
+    --fileserve-mode                      set static file serving mode
+    --check-cache                         check for response data in the cache
+    --close-on-exec                       set close-on-exec on sockets (could be required for spawning processes in requests)
+    --mode                                set uWSGI custom mode
+    --env                                 set environment variable
+    --unenv                               unset environment variable
+    --vacuum                              try to remove all of the generated file/sockets
+    --reuse-port                          enable REUSE_PORT flag on socket (BSD only)
+    --zerg                                attach to a zerg server
+    --zerg-fallback                       fallback to normal sockets if the zerg server is not available
+    --zerg-server                         enable the zerg server on the specified UNIX socket
+    --cron                                add a cron task
+    --loop                                select the uWSGI loop engine
+    --worker-exec                         run the specified command as worker
+    --attach-daemon                       attach a command/daemon to the master process (the command has to not go in background)
+    --plugins                             load uWSGI plugins
+    --plugin                              load uWSGI plugins
+    --plugins-dir                         add a directory to uWSGI plugin search path
+    --plugin-dir                          add a directory to uWSGI plugin search path
+    --autoload                            try to automatically load plugins when unknown options are found
+    --allowed-modifiers                   comma separated list of allowed modifiers
+    --remap-modifier                      remap request modifier from one id to another
+    --app                                 *** deprecated ***
+    --dump-options                        dump the full list of available options
+    --show-config                         show the current config reformatted as ini
+    --print                               simple print
+    --version                             print uWSGI version
+    --wsgi-file                           load .wsgi file
+    --file                                load .wsgi file
+    --eval                                eval python code
+    -w|--module                           load a WSGI module
+    -w|--wsgi                             load a WSGI module
+    --callable                            set default WSGI callable name
+    -J|--test                             test a mdule import
+    -H|--home                             set PYTHONHOME/virtualenv
+    -H|--virtualenv                       set PYTHONHOME/virtualenv
+    -H|--venv                             set PYTHONHOME/virtualenv
+    -H|--pyhome                           set PYTHONHOME/virtualenv
+    --pythonpath                          add directory (or glob) to pythonpath
+    --python-path                         add directory (or glob) to pythonpath
+    --pp                                  add directory (or glob) to pythonpath
+    --pymodule-alias                      add a python alias module
+    --post-pymodule-alias                 add a python module alias after uwsgi module initialization
+    --import                              import a python module
+    --pyimport                            import a python module
+    --py-import                           import a python module
+    --python-import                       import a python module
+    --shared-import                       import a python module in all of the processes
+    --shared-pyimport                     import a python module in all of the processes
+    --shared-py-import                    import a python module in all of the processes
+    --shared-python-import                import a python module in all of the processes
+    --spooler-import                      import a python module in the spooler
+    --spooler-pyimport                    import a python module in the spooler
+    --spooler-py-import                   import a python module in the spooler
+    --spooler-python-import               import a python module in the spooler
+    --pyargv                              manually set sys.argv
+    -O|--optimize                         set python optimization level
+    --paste                               load a paste.deploy config file
+    --paste-logger                        enable paste fileConfig logger
+    --web3                                load a web3 app
+    --pump                                load a pump app
+    --wsgi-lite                           load a wsgi-lite app
+    --ini-paste                           load a paste.deploy config file containing uwsgi section
+    --ini-paste-logged                    load a paste.deploy config file containing uwsgi section (load loggers too)
+    --reload-os-env                       force reload of os.environ at each request
+    --no-site                             do not import site module
+    --pyshell                             run an interactive python shell in the uWSGI environment
+    --pyshell-oneshot                     run an interactive python shell in the uWSGI environment (one-shot variant)
+    --python                              run a python script in the uWSGI environment
+    --py                                  run a python script in the uWSGI environment
+    --pyrun                               run a python script in the uWSGI environment
+    --py-auto-reload                      monitor python modules mtime to trigger reload (use only in development)
+    --py-autoreload                       monitor python modules mtime to trigger reload (use only in development)
+    --python-auto-reload                  monitor python modules mtime to trigger reload (use only in development)
+    --python-autoreload                   monitor python modules mtime to trigger reload (use only in development)
+    --py-auto-reload-ignore               ignore the specified module during auto-reload scan (can be specified multiple times)
+    --start_response-nodelay              send WSGI http headers as soon as possible (PEP violation)
+    --ping                                ping specified uwsgi host
+    --ping-timeout                        set ping timeout
+    --nagios                              nagios check
+    --rrdtool                             collect requests data in the specified rrd file
+    --rrdtool-freq                        set collect frequency
+    --rrdtool-max-ds                      set maximum number of data sources
+    --carbon                              push statistics to the specified carbon server
+    --carbon-timeout                      set carbon connection timeout
+    --carbon-freq                         set carbon push frequency
+    --carbon-id                           set carbon id
+    --carbon-no-workers                   disable generation of single worker metrics
+    --fastrouter                          run the fastrouter on the specified port
+    --fastrouter-processes                prefork the specified number of fastrouter processes
+    --fastrouter-workers                  prefork the specified number of fastrouter processes
+    --fastrouter-zerg                     attach the fastrouter to a zerg server
+    --fastrouter-use-cache                use uWSGI cache as hostname->server mapper for the fastrouter
+    --fastrouter-use-pattern              use a pattern for fastrouter hostname->server mapping
+    --fastrouter-use-base                 use a base dir for fastrouter hostname->server mapping
+    --fastrouter-fallback                 fallback to the specified node in case of error
+    --fastrouter-use-code-string          use code string as hostname->server mapper for the fastrouter
+    --fastrouter-use-socket               forward request to the specified uwsgi socket
+    --fastrouter-to                       forward requests to the specified uwsgi server (you can specify it multiple times for load balancing)
+    --fastrouter-gracetime                retry connections to dead static nodes after the specified amount of seconds
+    --fastrouter-events                   set the maximum number of concurrent events
+    --fastrouter-quiet                    do not report failed connections to instances
+    --fastrouter-cheap                    run the fastrouter in cheap mode
+    --fastrouter-subscription-server      run the fastrouter subscription server on the spcified address
+    --fastrouter-subscription-slot        *** deprecated ***
+    --fastrouter-subscription-use-regexp  enable regexp for subscription system
+    --fastrouter-timeout                  set fastrouter timeout
+    --fastrouter-post-buffering           enable fastrouter post buffering
+    --fastrouter-post-buffering-dir       put fastrouter buffered files to the specified directory
+    --fastrouter-stats                    run the fastrouter stats server
+    --fastrouter-stats-server             run the fastrouter stats server
+    --fastrouter-ss                       run the fastrouter stats server
+    --fastrouter-harakiri                 enable fastrouter harakiri
+    --http                                add an http router/server on the specified address
+    --http-processes                      set the number of http processes to spawn
+    --http-workers                        set the number of http processes to spawn
+    --http-var                            add a key=value item to the generated uwsgi packet
+    --http-to                             forward requests to the specified node
+    --http-modifier1                      set uwsgi protocol modifier1
+    --http-use-cache                      use uWSGI cache as key->value virtualhost mapper
+    --http-use-pattern                    use the specified pattern for mapping requests to unix sockets
+    --http-use-base                       use the specified base for mapping requests to unix sockets
+    --http-use-cluster                    load balance to nodes subscribed to the cluster
+    --http-events                         set the number of concurrent http async events
+    --http-subscription-server            enable the subscription server
+    --http-subscription-use-regexp        enable regexp usage in subscription system
+    --http-timeout                        set internal http socket timeout
+    --http-manage-expect                  manage the Expect HTTP request header
+    --ugreen                              enable ugreen coroutine subsystem
+    --ugreen-stacksize                    set ugreen stack size in pages
+    --zergpool                            start a zergpool on specified address for specified address
+    --zerg-pool                           start a zergpool on specified address for specified address
