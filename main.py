@@ -24,9 +24,9 @@ class HelloWebapp2(BaseHandler):
     self.render_response("template.html", **context)
 
 
-app = webapp2.wsgiapplication([
-  ('/', hellowebapp2),
-  ], debug=true
+app = webapp2.WSGIApplication([
+  ('/', HelloWebapp2),
+  ], debug=True
    , config={'webapp2_extras.jinja2': {
         'template_path': ['.']
       }
