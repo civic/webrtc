@@ -19,3 +19,11 @@ run nginx
     /usr/local/sbin/nginx -s quit
 
 
+        location /js {
+            root    /Users/t_sasaki/Study/Python/webapp2;
+        }
+        location / {
+            include uwsgi_params;
+            uwsgi_pass 127.0.0.1:3031;
+        }
+

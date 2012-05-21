@@ -17,15 +17,13 @@ class BaseHandler(webapp2.RequestHandler):
 
 class HelloWebapp2(BaseHandler):
   def get(self):
-    self.response.write("Hello, webapp2!!!")
-    self.response.write(json.encode({"hello": "World"}))
 
-    context = {"message": "Hello WORLD"}
+    context = {"title": "WebRTC demo"}
     self.render_response("template.html", **context)
 
 
 app = webapp2.WSGIApplication([
-  ('/', HelloWebapp2),
+    ('/', HelloWebapp2),
   ], debug=True
    , config={'webapp2_extras.jinja2': {
         'template_path': ['.']
@@ -34,7 +32,13 @@ app = webapp2.WSGIApplication([
 
 def main():
   from paste import httpserver
-  httpserver.serve(app, host='127.0.0.1', port='8080')
+  from paste.urlparser import StaticURLParser
+  from paste.cascade import Cascade
+
+  static_app = StaticURLParser("./")
+  app_c = Cascade([static_app, app])
+
+  httpserver.serve(app_c, host='127.0.0.1', port='8080')
 
 if __name__ == '__main__':
   main()
