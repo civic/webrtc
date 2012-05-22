@@ -4,8 +4,6 @@ import os
 import webapp2
 from webapp2_extras import json
 from webapp2_extras import jinja2
-from paste.urlparser import StaticURLParser
-from paste.cascade import Cascade
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
@@ -24,7 +22,7 @@ class HelloWebapp2(BaseHandler):
     self.render_response("template.html", **context)
 
 
-app_web = webapp2.WSGIApplication([
+app = webapp2.WSGIApplication([
     ('/', HelloWebapp2),
   ], debug=True
    , config={'webapp2_extras.jinja2': {
@@ -32,13 +30,14 @@ app_web = webapp2.WSGIApplication([
       }
     })
 
-app_static = StaticURLParser("./")
-app = Cascade([app_static, app_web])
 
 def main():
   from paste import httpserver
-
-  httpserver.serve(app, host='127.0.0.1', port='8080')
+  from paste.urlparser import StaticURLParser
+  from paste.cascade import Cascade
+  app_static = StaticURLParser("./")
+  app_in = Cascade([app_static, app])
+  httpserver.serve(app_in, host='127.0.0.1', port='8080')
 
 if __name__ == '__main__':
   main()

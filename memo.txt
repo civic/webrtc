@@ -1,12 +1,15 @@
 
 standalone uwsgi
     uwsgi -H env --master --http :9090 --enable-threads -w main --callable app
+    or
+    uwsgi --yaml standalone-uwsgi.yaml
+
 
 
 nginx uwsgi
     uwsgi -H env --master --socket 127.0.0.1:3031 --enable-threads -w main --callable app
     or
-    uwsgi --yaml uwsgi.yaml
+    uwsgi --yaml nginx-uwsgi.yaml
     
  nginx
             location / {

@@ -1,0 +1,9 @@
+uwsgi:
+    socket: 127.0.0.1:3031
+    virtualenv: env
+    master: true
+    enable-threads: true
+    module: main
+    touch-reload: uwsgi.proc
+    callable: app
+
