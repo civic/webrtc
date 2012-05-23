@@ -2,7 +2,8 @@ $(function(){
     var video_local = $("#video_local").get(0)
     $("#connect").toggle(
         function(){
-            navigator.webkitGetUserMedia("video,audio", onGUMSuccess, onGUMError);
+            navigator.webkitGetUserMedia({video: true, audio: true}, onGUMSuccess, onGUMError);
+
             function onGUMSuccess(stream){
                 video_local.src = window.webkitURL ?  window.webkitURL.createObjectURL(stream) : stream;
 
@@ -19,18 +20,30 @@ $(function(){
 
         }
     );
-    function createPeerConnection(stream){
+     function createPeerConnection(stream){
         //connect to STUN server
-        pc = new webkitDeprecatedPeerConnection("STUN stun.l.google.com:19302", onSignalingMessage);
+        var pc;
+        try {
+            pc = new webkitDeprecatedPeerConnection("STUN stun.l.google.com:19302", onSignalingMessage);
+        } catch (e){
+            try {
+                pc = new webkitPeerConnection("STUN stun.l.google.com:19302", onSignalingMessage);
+                console.log("Created webkitPeerConnnection with config \"{{pc_config}}\".");
+            } catch (e) {
+                console.log("Failed to create webkitPeerConnection, exception: " + e.message);
+                alert("Cannot create PeerConnection object; Is the 'PeerConnection' flag enabled in about:flags?");
+                return;
+            }
+        }
 
-        pc.addStream(localStream);
+        pc.addStream(stream);
 
         // set handlers for peerconnection events
         pc.onconnecting = onSessionConnecting;
         pc.onopen = onSessionOpened;
         pc.onaddstream = onRemoteStreamAdded;
         pc.onremovestream = onRemoteStreamRemoved;
-    });
+    }
     function onSignalingMessage(mesg) {
       console.log("receive signaling message");
 
