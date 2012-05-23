@@ -2,8 +2,18 @@ $(function(){
     var video_local = $("#video_local").get(0)
     $("#connect").toggle(
         function(){
-            navigator.webkitGetUserMedia({video: true, audio: true}, onGUMSuccess, onGUMError);
-
+            try {
+                navigator.webkitGetUserMedia({audio:true, video:true}, onGUMSuccess, onGUMError);
+                console.log("Requested access to local media with new syntax.");
+            } catch (e) {
+                try {
+                    navigator.webkitGetUserMedia("video,audio", onGUMSuccess, onGUMError);
+                    console.log("Requested access to local media with old syntax.");
+                } catch (e) {
+                    alert("webkitGetUserMedia() failed. Is the MediaStream flag enabled in about:flags?");
+                    console.log("webkitGetUserMedia failed with exception: " + e.message);
+                }
+            }
             function onGUMSuccess(stream){
                 video_local.src = window.webkitURL ?  window.webkitURL.createObjectURL(stream) : stream;
 
@@ -15,7 +25,8 @@ $(function(){
             }
             $(this).text("Disconnect");
         }, function(){
-            video_local.src = null;
+            video_local.pause();
+            $(video_local).removeAttr("src");
             $(this).text("Connect");
 
         }
