@@ -2,20 +2,21 @@ $(function(){
     var localInfo = {
         video:  $("#video_local").get(0),
         stream: null,
-        ws: null
+        ws: null,
+        peerCon: null
     };
     var ws = new WebSocket("ws://" + location.host + "/ws");
     $(ws).bind("open", function(){
         console.log("web socket opened");
-        setInterval(function(){
-            console.log("sendws");
-            ws.send("hogehoge" + new Date());
-        }, 3000);
     });
     $(ws).bind("message", function(e){
         var data = JSON.parse(e.originalEvent.data);
         console.log(data);
-        console.log("data:"+ data.msg);
+
+        if (localInfo.peerCon === null){
+            createPeerConnection();
+        }
+        localInfo.peerCon.processSignalingMessage(data);
     });
 
 
@@ -31,6 +32,7 @@ $(function(){
                 } catch (e) {
                     alert("webkitGetUserMedia() failed. Is the MediaStream flag enabled in about:flags?");
                     console.log("webkitGetUserMedia failed with exception: " + e.message);
+                    createPeerConnection(null);
                 }
             }
             function onGUMSuccess(stream){
@@ -41,6 +43,7 @@ $(function(){
             }
             function onGUMError(error){
                 console.error('An error occurred: [CODE ' + error.code + ']');
+                createPeerConnection(null);
                 return;
             }
             $(this).text("Disconnect");
@@ -54,11 +57,13 @@ $(function(){
     function createPeerConnection(stream){
         //connect to STUN server
         var pc;
+        //var stun = "STUN stun.l.google.com:19302";
+        var stun = "NONE";
         try {
-            pc = new webkitDeprecatedPeerConnection("STUN stun.l.google.com:19302", onSignalingMessage);
+            pc = new webkitDeprecatedPeerConnection(stun, onSignalingMessage);
         } catch (e){
             try {
-                pc = new webkitPeerConnection("STUN stun.l.google.com:19302", onSignalingMessage);
+                pc = new webkitPeerConnection(stun, onSignalingMessage);
                 console.log("Created webkitPeerConnnection with config \"{{pc_config}}\".");
             } catch (e) {
                 console.log("Failed to create webkitPeerConnection, exception: " + e.message);
@@ -66,8 +71,11 @@ $(function(){
                 return;
             }
         }
+        localInfo.peerCon = pc;
 
-        pc.addStream(stream);
+        if (stream != null){
+            pc.addStream(stream);
+        }
 
         // set handlers for peerconnection events
         $(pc).bind("connecting", function(){
@@ -87,11 +95,11 @@ $(function(){
         });
     }
 
-    function onSignalingMessage(mesg) {
+    function onSignalingMessage(msg) {
         console.log("receive signaling message");
 
-        console.log(mesg);
-        //ws.send(data);
+        console.log(msg);
+        ws.send(msg);
     }
 
 

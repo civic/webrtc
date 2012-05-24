@@ -3,11 +3,11 @@
 import os
 import webapp2
 from time import gmtime, strftime  
-import json
 import gevent
 import geventwebsocket
 from geventwebsocket.handler import WebSocketHandler
 from webapp2_extras import jinja2
+from webapp2_extras import json
 from paste import cascade
 
 class BaseHandler(webapp2.RequestHandler):
@@ -40,24 +40,33 @@ class MyWebSocketHandler(webapp2.RequestHandler):
         msg = ws.receive()
         if msg is None:
           break
-        message_dic = {}  
-        message_dic['msg'] = msg
-        message_dic['time'] = strftime("%H:%M:%S", gmtime())  
 
-        removes = set()
-        for ts in sockets:  
-          try:
-            ts.send(json.JSONEncoder().encode(message_dic))   
-          except geventwebsocket.WebSocketError, ex:
-            removes.add(ts)
+        self.on_receive(ws, msg)
 
-        for rmv in removes:
-          if rmv in sockets:
-            sockets.remove(rmv)
-
-        print msg
     except geventwebsocket.WebSocketError, ex:
       ws.close()
+
+  def on_receive(self,ws,  message):
+    json_obj = {"msg": message}
+
+    self.send_all(ws, json_obj)
+
+  def send_all(self, ws, json_obj):
+    removes = set()
+    sockets = self.app.registry["sockets"]
+    json_str = json.encode(json_obj)
+    for ts in sockets:  
+      try:
+        if ws != ts:
+          ts.send(json_str)   
+      except geventwebsocket.WebSocketError, ex:
+        removes.add(ts)
+
+    for rmv in removes:
+      if rmv in sockets:
+        sockets.remove(rmv)
+
+    print json_str
 
 
 app = webapp2.WSGIApplication([
