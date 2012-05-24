@@ -2,6 +2,8 @@
 
 import os
 import webapp2
+import gevent
+from geventwebsocket.handler import WebSocketHandler
 from webapp2_extras import json
 from webapp2_extras import jinja2
 
@@ -21,7 +23,6 @@ class HelloWebapp2(BaseHandler):
     context = {"title": "WebRTC demo"}
     self.render_response("template.html", **context)
 
-
 app = webapp2.WSGIApplication([
     ('/', HelloWebapp2),
   ]
@@ -32,21 +33,44 @@ app = webapp2.WSGIApplication([
     }
   )
 
+def chat_handle(environ, start_response):
+  ws = environ['wsgi.websocket']
+  print "enter"
+  msg = ws.receive()
+  print msg
+  ws.send(msg)
+
+def ws_app(environ, start_response):
+  path = environ["PATH_INFO"]
+  print "ws"
+  if environ:
+    if path == "/ws":
+      return chat_handle(environ, start_response)
+    else:
+      start_response('404 NotFound', [])
+      return ""
+
+
+
 def main():
   #from paste import httpserver
   from paste.urlparser import StaticURLParser
   from paste.cascade import Cascade
   app_static = StaticURLParser("./static")
-  app_in = Cascade([app_static, app])
+  app_in = Cascade([app_static, app, ws_app])
 
 
   #httpserver.serve(app_in, host='127.0.0.1', port='8080')
 
+  """
   from wsgiref.simple_server import make_server
   httpd = make_server("", 8080, app_in)
   httpd.serve_forever()
+  """
+
+  server = gevent.pywsgi.WSGIServer(('0.0.0.0', 8080), app_in, handler_class=WebSocketHandler)
+  server.serve_forever()
 
 if __name__ == '__main__':
   main()
-
 

@@ -1,5 +1,22 @@
 $(function(){
-    var video_local = $("#video_local").get(0)
+    var localInfo = {
+        video:  $("#video_local").get(0),
+        stream: null,
+        ws: null
+    };
+    var ws = new WebSocket("ws://" + location.host + "/ws");
+    $(ws).bind("open", function(){
+        console.log("web socket opened");
+        ws.send("hogehoge1");
+        ws.send("hogehoge2");
+        ws.send("hogehoge3");
+        ws.send("hogehoge4");
+    });
+    $(ws).bind("message", function(e){
+        console.log("data:"+ e.data);
+    });
+
+
     $("#connect").toggle(
         function(){
             try {
@@ -15,7 +32,8 @@ $(function(){
                 }
             }
             function onGUMSuccess(stream){
-                video_local.src = window.webkitURL ?  window.webkitURL.createObjectURL(stream) : stream;
+                localInfo.stream = stream;
+                localInfo.video.src = window.webkitURL ?  window.webkitURL.createObjectURL(stream) : stream;
 
                 createPeerConnection(stream);
             }
@@ -25,13 +43,13 @@ $(function(){
             }
             $(this).text("Disconnect");
         }, function(){
-            video_local.pause();
-            $(video_local).removeAttr("src");
+            localInfo.stream.stop();
+            $(localInfo.video).removeAttr("src");
             $(this).text("Connect");
 
         }
     );
-     function createPeerConnection(stream){
+    function createPeerConnection(stream){
         //connect to STUN server
         var pc;
         try {
@@ -50,49 +68,29 @@ $(function(){
         pc.addStream(stream);
 
         // set handlers for peerconnection events
-        pc.onconnecting = onSessionConnecting;
-        pc.onopen = onSessionOpened;
-        pc.onaddstream = onRemoteStreamAdded;
-        pc.onremovestream = onRemoteStreamRemoved;
+        $(pc).bind("connecting", function(){
+            console.log("onSessionConnecting...");
+        });
+        $(pc).bind("open", function(){
+            console.log("onSessionOpened...");
+        });
+        $(pc).bind("addstream", function(){
+            console.log("onRemoteStreamAdded...");
+            var url = webkitURL.createObjectURL(event.stream);
+            $("video_remote")[0].src = url;
+
+        });
+        $(pc).bind("removestream", function(){
+            console.log("onRemoteStreamRemoved...");
+        });
     }
+
     function onSignalingMessage(mesg) {
-      console.log("receive signaling message");
+        console.log("receive signaling message");
 
-      // send SDP message to session server.
-      //////////////////////////////////////
-
-      sendMessage(mesg);
+        console.log(mesg);
+        //ws.send(data);
     }
 
-    function sendMessage(data) {
-      console.log("=====================================");
-      console.log("C=>S");
-      console.log("---");
-      console.log(data);
-      console.log("=====================================");
-
-      ws.send(data);
-    }
-
-    // Handlers for peerconnection events.
-    ///////////////////////////////////////
-    function onSessionConnecting(e) {
-      console.log("onSessionConnecting...");
-    }
-
-    function onSessionOpened(e) {
-      console.log("onSessionOpened...");
-    }
-
-    function onRemoteStreamAdded(e) {
-      console.log("onRemoteStreamAdded...");
-
-      var url = webkitURL.createObjectURL(event.stream);
-      $("video_remote")[0].src = url;
-    }
-
-    function onRemoteStreamRemoved(e) {
-      console.log("onRemoteStreamRemoved...");
-    }
 
 });
