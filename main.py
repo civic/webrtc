@@ -5,10 +5,10 @@ import webapp2
 from time import gmtime, strftime  
 import gevent
 import geventwebsocket
-from geventwebsocket.handler import WebSocketHandler
 from webapp2_extras import jinja2
 from webapp2_extras import json
 from paste import cascade
+from geventwebsocket.handler import WebSocketHandler
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property

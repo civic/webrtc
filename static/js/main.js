@@ -11,13 +11,14 @@ $(function(){
     });
     $(ws).bind("message", function(e){
         var data = JSON.parse(e.originalEvent.data);
-        console.log(data);
+        console.log("websocket receive");
 
-        if (localInfo.peerCon === null){
-            createPeerConnection();
+        if (!!localInfo.peerCon === false){
+            createPeerConnection(localInfo.stream);
         }
-        localInfo.peerCon.processSignalingMessage(data);
+        localInfo.peerCon.processSignalingMessage(e.originalEvent.data);
     });
+    localInfo.ws = ws;
 
 
     $("#connect").toggle(
@@ -59,21 +60,29 @@ $(function(){
         var pc;
         //var stun = "STUN stun.l.google.com:19302";
         var stun = "NONE";
-        try {
-            pc = new webkitDeprecatedPeerConnection(stun, onSignalingMessage);
-        } catch (e){
+
+        if (localInfo.peerCon == null){
+            console.log("createPeerConnection")
             try {
-                pc = new webkitPeerConnection(stun, onSignalingMessage);
-                console.log("Created webkitPeerConnnection with config \"{{pc_config}}\".");
-            } catch (e) {
-                console.log("Failed to create webkitPeerConnection, exception: " + e.message);
-                alert("Cannot create PeerConnection object; Is the 'PeerConnection' flag enabled in about:flags?");
-                return;
+                pc = new webkitDeprecatedPeerConnection(stun, onSignalingMessage);
+            } catch (e){
+                try {
+                    pc = new webkitPeerConnection(stun, onSignalingMessage);
+                    console.log("Created webkitPeerConnnection with config \"{{pc_config}}\".");
+                } catch (e) {
+                    console.log("Failed to create webkitPeerConnection, exception: " + e.message);
+                    alert("Cannot create PeerConnection object; Is the 'PeerConnection' flag enabled in about:flags?");
+                    return;
+                }
             }
+            localInfo.peerCon = pc;
+        } else {
+            console.log("use peerConnection")
+            pc = localInfo.peerCon;
         }
-        localInfo.peerCon = pc;
 
         if (stream != null){
+            console.log("add stream");
             pc.addStream(stream);
         }
 
@@ -84,12 +93,12 @@ $(function(){
         $(pc).bind("open", function(){
             console.log("onSessionOpened...");
         });
-        $(pc).bind("addstream", function(){
+        pc.onaddstream = function(){
             console.log("onRemoteStreamAdded...");
             var url = webkitURL.createObjectURL(event.stream);
             $("video_remote")[0].src = url;
 
-        });
+        };
         $(pc).bind("removestream", function(){
             console.log("onRemoteStreamRemoved...");
         });
@@ -98,8 +107,7 @@ $(function(){
     function onSignalingMessage(msg) {
         console.log("receive signaling message");
 
-        console.log(msg);
-        ws.send(msg);
+        localInfo.ws.send(msg);
     }
 
 
