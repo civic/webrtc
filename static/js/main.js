@@ -7,13 +7,15 @@ $(function(){
     var ws = new WebSocket("ws://" + location.host + "/ws");
     $(ws).bind("open", function(){
         console.log("web socket opened");
-        ws.send("hogehoge1");
-        ws.send("hogehoge2");
-        ws.send("hogehoge3");
-        ws.send("hogehoge4");
+        setInterval(function(){
+            console.log("sendws");
+            ws.send("hogehoge" + new Date());
+        }, 3000);
     });
     $(ws).bind("message", function(e){
-        console.log("data:"+ e.data);
+        var data = JSON.parse(e.originalEvent.data);
+        console.log(data);
+        console.log("data:"+ data.msg);
     });
 
 

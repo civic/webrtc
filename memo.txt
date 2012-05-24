@@ -4,8 +4,6 @@ standalone uwsgi
     or
     uwsgi --yaml standalone-uwsgi.yaml
 
-
-
 nginx uwsgi
     uwsgi -H env --master --socket 127.0.0.1:3031 --enable-threads -w main --callable app
     or
@@ -16,6 +14,7 @@ nginx uwsgi
                 include uwsgi_params;
                 uwsgi_pass 127.0.0.1:3031;
             }
+
 
 run nginx
     /usr/local/sbin/nginx
@@ -30,3 +29,8 @@ run nginx
             uwsgi_pass 127.0.0.1:3031;
         }
 
+スタンドアロンwsgiでは、staticfilesを返すのがうまく行かなかった。HTTPヘッダが混ざる？？
+websocketをPythonで実装するのが面倒になってやめたgevent-websocketがうまく動作しなかった。
+1どの送受信はうまく行くが、２度目以降の送信が到達しない
+-->イベントループする必要があった
+webapp2 + gevent-websocketの実装ができた

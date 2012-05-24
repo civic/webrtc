@@ -2,10 +2,13 @@
 
 import os
 import webapp2
+from time import gmtime, strftime  
+import json
 import gevent
+import geventwebsocket
 from geventwebsocket.handler import WebSocketHandler
-from webapp2_extras import json
 from webapp2_extras import jinja2
+from paste import cascade
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
@@ -17,14 +20,49 @@ class BaseHandler(webapp2.RequestHandler):
     rv = self.jinja2.render_template(path, **context)
     self.response.write(rv)
 
-class HelloWebapp2(BaseHandler):
+class IndexHandler(BaseHandler):
   def get(self):
 
     context = {"title": "WebRTC demo"}
     self.render_response("template.html", **context)
 
+class MyWebSocketHandler(webapp2.RequestHandler):
+  def get(self):
+    ws = self.request.environ['wsgi.websocket']
+    if ws:
+      self.websocket_handle(ws)
+
+  def websocket_handle(self, ws):
+    sockets = self.app.registry["sockets"]
+    try:
+      sockets.add(ws)
+      while True:
+        msg = ws.receive()
+        if msg is None:
+          break
+        message_dic = {}  
+        message_dic['msg'] = msg
+        message_dic['time'] = strftime("%H:%M:%S", gmtime())  
+
+        removes = set()
+        for ts in sockets:  
+          try:
+            ts.send(json.JSONEncoder().encode(message_dic))   
+          except geventwebsocket.WebSocketError, ex:
+            removes.add(ts)
+
+        for rmv in removes:
+          if rmv in sockets:
+            sockets.remove(rmv)
+
+        print msg
+    except geventwebsocket.WebSocketError, ex:
+      ws.close()
+
+
 app = webapp2.WSGIApplication([
-    ('/', HelloWebapp2),
+    ('/', IndexHandler),
+    ('/ws', MyWebSocketHandler),
   ]
   ,debug=True
   ,config={'webapp2_extras.jinja2': {
@@ -32,41 +70,13 @@ app = webapp2.WSGIApplication([
       }
     }
   )
-
-def chat_handle(environ, start_response):
-  ws = environ['wsgi.websocket']
-  print "enter"
-  msg = ws.receive()
-  print msg
-  ws.send(msg)
-
-def ws_app(environ, start_response):
-  path = environ["PATH_INFO"]
-  print "ws"
-  if environ:
-    if path == "/ws":
-      return chat_handle(environ, start_response)
-    else:
-      start_response('404 NotFound', [])
-      return ""
-
+app.registry["sockets"] = set()
 
 
 def main():
-  #from paste import httpserver
   from paste.urlparser import StaticURLParser
-  from paste.cascade import Cascade
   app_static = StaticURLParser("./static")
-  app_in = Cascade([app_static, app, ws_app])
-
-
-  #httpserver.serve(app_in, host='127.0.0.1', port='8080')
-
-  """
-  from wsgiref.simple_server import make_server
-  httpd = make_server("", 8080, app_in)
-  httpd.serve_forever()
-  """
+  app_in = cascade.Cascade([app_static, app])
 
   server = gevent.pywsgi.WSGIServer(('0.0.0.0', 8080), app_in, handler_class=WebSocketHandler)
   server.serve_forever()
