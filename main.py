@@ -17,6 +17,7 @@ class BaseHandler(webapp2.RequestHandler):
 
   def render_response(self, _tempplate, **context):
     path = os.path.join(os.path.dirname(__file__), _tempplate)
+
     rv = self.jinja2.render_template(path, **context)
     self.response.write(rv)
 
@@ -24,6 +25,11 @@ class IndexHandler(BaseHandler):
   def get(self):
 
     context = {"title": "WebRTC demo"}
+
+    context["initiator"] = "false"
+    if self.request.get("i"):
+      context["initiator"] = "true"
+
     self.render_response("template.html", **context)
 
 class MyWebSocketHandler(webapp2.RequestHandler):
