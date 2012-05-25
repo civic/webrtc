@@ -11,12 +11,12 @@ $(function(){
     });
     $(ws).bind("message", function(e){
         var data = JSON.parse(e.originalEvent.data);
-        console.log("websocket receive");
+        console.log("websocket receive", data);
 
-        if (!!localInfo.peerCon === false){
+        if (localInfo.peerCon == null){
             createPeerConnection(localInfo.stream);
         }
-        localInfo.peerCon.processSignalingMessage(e.originalEvent.data);
+        localInfo.peerCon.processSignalingMessage(data.sdp);
     });
     localInfo.ws = ws;
 
@@ -58,8 +58,8 @@ $(function(){
     function createPeerConnection(stream){
         //connect to STUN server
         var pc;
-        //var stun = "STUN stun.l.google.com:19302";
-        var stun = "NONE";
+        var stun = "STUN stun.l.google.com:19302";
+        //var stun = "STUN NONE";
 
         if (localInfo.peerCon == null){
             console.log("createPeerConnection")

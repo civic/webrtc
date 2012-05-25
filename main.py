@@ -47,7 +47,7 @@ class MyWebSocketHandler(webapp2.RequestHandler):
       ws.close()
 
   def on_receive(self,ws,  message):
-    json_obj = {"msg": message}
+    json_obj = {"sdp": message}
 
     self.send_all(ws, json_obj)
 
