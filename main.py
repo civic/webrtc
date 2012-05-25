@@ -9,6 +9,8 @@ from webapp2_extras import jinja2
 from webapp2_extras import json
 from paste import cascade
 from geventwebsocket.handler import WebSocketHandler
+import random
+
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
@@ -29,6 +31,10 @@ class IndexHandler(BaseHandler):
     context["initiator"] = "false"
     if self.request.get("i"):
       context["initiator"] = "true"
+
+    source_str = 'abcdefghijklmnopqrstuvwxyz'
+    random.choice(source_str)  #a〜zでランダムに１文字
+    context["uid"] = "".join([random.choice(source_str) for x in xrange(10)])
 
     self.render_response("template.html", **context)
 

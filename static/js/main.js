@@ -8,7 +8,7 @@ $(function(){
         peerCon: null,
         channelReady: false,
         started: false,
-        initiator: render_param['initiator'],
+        initiator: render_param.initiator,
         readySDP: null
     };
     var ws = new WebSocket("ws://" + location.host + "/ws");
@@ -27,11 +27,12 @@ $(function(){
                     maybeStart();
                 }
                 if (localInfo.peerCon){
+                    console.log("processSignalingMessage1");
                     localInfo.peerCon.processSignalingMessage(sdp);
                 } else {
+                    console.log("sdp ready");
                     localInfo.readySDP = sdp;
                 }
-                console.log("processSignalingMessage");
             } else {
                 console.log("ERROR ***************");
             }
@@ -77,6 +78,10 @@ $(function(){
             localInfo.stream.stop();
             $(localInfo.video).removeAttr("src");
             $(this).text("Connect");
+            if (localInfo.peerCon){
+                localInfo.peerCon.close();
+                localInfo.peerCon = null;
+            }
 
         }
     );
@@ -133,6 +138,7 @@ $(function(){
         });
 
         if (localInfo.readySDP){
+            console.log("processSignalingMessage2");
             localInfo.peerCon.processSignalingMessage(localInfo.readySDP);
         }
     }
