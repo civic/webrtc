@@ -1,17 +1,25 @@
 #!env/bin/python
+#coding: utf-8
 
 import os
 import webapp2
 from time import gmtime, strftime  
-import gevent
-import geventwebsocket
 from webapp2_extras import jinja2
 from webapp2_extras import json
-from paste import cascade
-from geventwebsocket.handler import WebSocketHandler
+import paste
+import paste.cascade
+import paste.urlparser
+
+# gevent-websocketでの実装は IPv6対応にハマったので断念した
+#import gevent
+#import geventwebsocket
+#from geventwebsocket.handler import WebSocketHandler
 import random
 
+import cogen.web.wsgi
+import cogen.common 
 
+#テンプレートエンジンを使うためのBaseClass
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
   def jinja2(self):
@@ -23,135 +31,171 @@ class BaseHandler(webapp2.RequestHandler):
     rv = self.jinja2.render_template(path, **context)
     self.response.write(rv)
 
+#トップページ表示
 class IndexHandler(BaseHandler):
   def get(self):
 
-    context = {"title": "WebRTC demo"}
+    context = {"title": "IPv6 Hackathon demo"}
 
+    #通信開始トリガになるinitiator
     context["initiator"] = "false"
     if self.request.get("i"):
       context["initiator"] = "true"
 
+    #ユーザID。toppage表示時に自動決定
     source_str = 'abcdefghijklmnopqrstuvwxyz'
     random.choice(source_str)  
     context["uid"] = "".join([random.choice(source_str) for x in xrange(16)])
 
     self.render_response("template.html", **context)
 
-class MyWebSocketHandler(webapp2.RequestHandler):
-  def get(self):
-    ws = self.request.environ['wsgi.websocket']
-    if ws:
-      self.websocket_handle(ws)
+class RoomManager:
+  def __init__(self, room_count):
+    #[0] ロビー
+    #[1] room1  [uid1, uid2]  のようにuidの配列
+    self.rooms = [[] for x in xrange(room_count + 1)]  #[0] is lobby
 
-  def websocket_handle(self, ws):
-    sockets = self.app.registry["rooms"][0] #0 = roby
-    try:
-      sockets.append(ws)
-      while True:
-        msg = ws.receive()
-        if msg is None:
-          break
+  def join(self, uid):
+    self.rooms[0].append(uid)
 
-        self.on_receive(ws, msg)
+  def leave(self, uid):
+    for members in self.rooms:
+      b = len(members)
+      if uid in members:
+        members.remove(uid)
 
-    except geventwebsocket.WebSocketError, ex:
-      console.log("closed")
-      ws.close()
-      rooms = self.app.registry["rooms"]
-      for sockets in rooms:
-        sockets.remove(ws)
+      print str(b) + ", " + str(len(members))
 
-  def on_receive(self, ws,  message):
-    json_obj = json.decode(message)
+  def move(self, uid, room_fr, room_to):
+    rooms = self.rooms
+    if room_to == 0 or len(rooms[room_to]) < 2:
+      if uid in rooms[room_fr]:
+        rooms[room_fr].remove(uid)
+      rooms[room_to].append(uid)
 
-    if json_obj['act'] == 'sdp':
-      room_no = json_obj['room_no']
-      sockets = self.app.registry["rooms"][room_no]
-      self.send_to(ws, sockets, json_obj)
+  def getMembersCountList(self):
+    list = []
+    for members in self.rooms:
+      list.append(len(members))
+    return list
 
-    elif json_obj['act'] == 'list':
-      print "list call"
-      rooms = self.app.registry["rooms"]
-      list = []
-      for sockets in rooms:
-        list.append(len(sockets))
+  def getMembers(self, room_no):
+    return tuple(self.rooms[room_no])
 
-      self.send_to(ws, [ws], {"act": "list", "room_list": list}, True)
 
-    elif json_obj['act'] == 'move':
-      rooms = self.app.registry["rooms"]
-      room_to = json_obj['room_to']
-      room_fr = json_obj['room_fr']
+#room情報
+room_manager = RoomManager(5)
+  
+#Ajaxで通知取得時のmsgbox
+#uidをキーに通知情報の配列を持つ
+msgbox = {}
 
-      if room_to == 0 or len(rooms[room_to]) < 2:
-        if ws in rooms[room_fr]:
-          rooms[room_fr].remove(ws)
-        rooms[room_to].append(ws)
+#AjaxリクエストHanlder
+class AjaxHandler(webapp2.RequestHandler):
+  def post(self):
+    act = self.request.get("act") #action
+    uid = self.request.get("uid") #ユーザid
 
-        self.send_to(ws, [ws], {"act": "move_ok", "count": len(rooms[room_to]), "room_to": room_to}, True)
+    print act + " called by " + uid
+    ret = None
 
-      #list response
-      rooms = self.app.registry["rooms"]
-      list = []
-      for sockets in rooms:
-        list.append(len(sockets))
+    #actionに対応するメソッド実行
+    action_method = getattr(self, "act_" + act)
+    ret = action_method()
 
-      targets = []
-      for sockets in rooms:
-        for tws in sockets:
-          targets.append(tws)
+    #json文字列にエンコードしてレスポンス
+    json_str = json.encode(ret)
+    self.response.write(json_str)
 
-      self.send_to(ws, targets, {"act": "list", "room_list": list}, True)
+  #room情報一覧取得
+  def act_list(self):
+    uid = self.request.get("uid")
 
-    elif json_obj['act'] == 'leave':
-      rooms = self.app.registry["rooms"]
-      for sockets in rooms:
-        b = len(sockets)
-        if ws in sockets:
-          sockets.remove(ws)
-        print str(b) + ", " + str(len(sockets))
-        ws.close()
+    if self.request.get("join") == "1": #最初のアクセス
+      print "join " + uid
+      room_manager.join(uid)
+      msgbox[uid] = []  #msgboxの生成
 
-  def send_to(self, ws, target_sockets, json_obj, include_me = False):
-    removes = set()
+      room_list = room_manager.getMembersCountList()
+      self.send_to(uid, None, {"type": "room_info", "room_list": room_list})
 
+    return {"act": "list_ret", "room_list": room_manager.getMembersCountList()}
+
+  #room,ロビーから退室して終了
+  def act_leave(self):
+    uid = self.request.get("uid")
+    print uid
+
+    room_manager.leave(uid)
+    if uid in msgbox:
+      del msgbox[uid] 
+
+    room_list = room_manager.getMembersCountList()
+    self.send_to(uid, None, {"type": "room_info", "room_list": room_list})
+
+    return {}
+
+  #部屋の移動
+  def act_move(self):
+    room_to = int(self.request.get('room_to'))
+    room_fr = int(self.request.get('room_fr'))
+    uid = self.request.get('uid')
+
+    #部屋の移動
+    room_manager.move(uid, room_fr, room_to)
+
+    #list response
+
+    #移動先のメンバー数
+    dst_count = len(room_manager.getMembers(room_to))
+    room_list = room_manager.getMembersCountList()
+    self.send_to(uid, None, {"type": "room_info", "room_list": room_list})
+
+    return {"act": "move_ret", "count": dst_count, "room_to": room_to, 
+        "room_list": room_list}
+
+  #SDPの送信
+  def act_sdp(self):
+    room_no = int(self.request.get('room_no'))
+    uid = self.request.get("uid")
+    memebers = room_manager.getMembers(room_no)
+
+    #room入室者へsdpを通知
+    self.send_to(uid, memebers, {"type": "sdp", "sdp": self.request.get("sdp")})
+
+    return {}
+  
+  #ポーリングによる情報取得
+  def act_check(self):
+    uid = self.request.get("uid")
+
+    msgs = msgbox.get(uid)  #自分のmsgbox
+    if not msgs:
+      msgs = [json.encode({"type": "room_info", "room_list": room_manager.getMembersCountList()})]
+
+    msgbox[uid] = []  #一度取得したら空に
+    return {"act": "check_ret", "ret": msgs}
+
+  #別のクライアントへ情報通知
+  def send_to(self, fr, targets, json_obj, include_me = False):
+    #本来はwebsocketでサーバーから先の入出者へ、
+    #通知するつもりだったが、push通知をやめて暫定的にpollingで取得するようにした
+    #(websocket実装のipv6対応に断念したため） 
+    #受信箱に通知情報を足して、ポーリングの取得に備える
     json_str = json.encode(json_obj)
-    for ts in target_sockets:  
-      try:
-        if ws != ts or include_me:
-          ts.send(json_str)   
-      except:
-        removes.add(ts)
 
-    rooms = self.app.registry["rooms"]
-    for rmv in removes:
-      for sockets in rooms:
-        if rmv in sockets:
-          sockets.remove(rmv)
+    if targets == None:
+      targets = msgbox.keys()
 
-
-  def send_all(self, ws, json_obj):
-    removes = set()
-    sockets = self.app.registry["sockets"]
-    json_str = json.encode(json_obj)
-    for ts in sockets:  
-      try:
-        if ws != ts:
-          ts.send(json_str)   
-      except geventwebsocket.WebSocketError, ex:
-        removes.add(ts)
-
-    for rmv in removes:
-      if rmv in sockets:
-        sockets.remove(rmv)
-
-    print json_str
+    for ts in targets:  
+      if fr != ts or include_me:  #自分がtargetsに含まれている場合に対象とするか
+        msgbox[ts].append(json_str)
+      print msgbox[ts]
 
 
 app = webapp2.WSGIApplication([
     ('/', IndexHandler),
-    ('/ws', MyWebSocketHandler),
+    ('/ajax', AjaxHandler),
   ]
   ,debug=True
   ,config={'webapp2_extras.jinja2': {
@@ -159,16 +203,26 @@ app = webapp2.WSGIApplication([
       }
     }
   )
-app.registry["rooms"] = [[] for x in xrange(11)];
 
 
+
+
+#開発時にscriptとして実行した際のエントリポイント
+#wsgiサーバーで動作させるときは使われない
 def main():
-  from paste.urlparser import StaticURLParser
-  app_static = StaticURLParser("./static")
-  app_in = cascade.Cascade([app_static, app])
+  #開発時にfrontにnginxを置かずにsimple_serverで動作させるときに
+  #static filesを返すだけのrequest_handlerを登録す
+  app_static = paste.urlparser.StaticURLParser("./static")
+  app_in = paste.cascade.Cascade([app_static, app]) #そして本来のappと統合
 
-  server = gevent.pywsgi.WSGIServer(('0.0.0.0', 8080), app_in, handler_class=WebSocketHandler)
-  server.serve_forever()
+  #gevent実装は断念
+  #server = gevent.pywsgi.WSGIServer(('0.0.0.0', 8080), app_in, handler_class=WebSocketHandler)
+  #server.serve_forever()
+
+  #開発時用のsimple_server
+  from wsgiref.simple_server import make_server
+  httpd = make_server('', 8080, app_in)
+  httpd.serve_forever()
 
 if __name__ == '__main__':
   main()
