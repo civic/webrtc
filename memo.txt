@@ -34,3 +34,85 @@ websocketをPythonで実装するのが面倒になってやめたgevent-websock
 1どの送受信はうまく行くが、２度目以降の送信が到達しない
 -->イベントループする必要があった
 webapp2 + gevent-websocketの実装ができた
+
+
+動作シーケンス
+    ClientA                                           ClientB
+    ----------------------------------------------------------
+    enter Room1
+
+    getUserMedia
+        onGUMSuccess
+            send:move
+                initiator = false
+
+                                            .....
+                                                     enterRoom1
+                                                         getUserMedia
+                                                             onGUMSuccess
+                                                                 send:move
+                                                                     initiator = true
+                                                                     maybeStart
+                                                                         createPeerConnection
+                                                                             onSignalingMessage
+                                                                                 send:sdp
+                                                                         peerCon.addStream
+                                             .....
+    send:check
+        receiveSDP
+            maybeStart
+                createPeerConnection
+                    onSignalingMessage
+                        send:sdp
+                                                     send:check
+                                                        receiveSDP
+                                                            processSignalingMessage
+                                                     
+                                             .....
+
+                peerCon.addStream
+
+                                                    pc.onaddstream
+                                                    video_remote.src = createObjectURL(event.steram)
+
+                                            .....
+            peerCon.processSignalingMessage
+
+                                            ....
+                                                           
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -62,7 +62,9 @@ $(function(){
                     maybeStart();
                 }
                 if (localInfo.peerCon){
+                    //基本的にはpeerConが作成済みのはず
                     console.log("processSignalingMessage1");
+                    //受信した相手のsdpからと自分のpeerConと接続を確立する
                     localInfo.peerCon.processSignalingMessage(sdp);
                 } else {
                     //peerConが確立するまで一時保持
@@ -136,6 +138,7 @@ $(function(){
         localInfo.stream = null;
         localInfo.started = false;
         $(localInfo.video).removeAttr("src");
+        $(localInfo.video_remote).removeAttr("src");
         if (localInfo.peerCon){
             localInfo.peerCon.close();
             localInfo.peerCon = null;
@@ -167,11 +170,12 @@ $(function(){
     function createPeerConnection(){
         //connect to STUN server
         var pc;
-        //var stun = "STUN stun.l.google.com:19302";
-        var stun = "STUN NONE";
+        var stun = "STUN stun.l.google.com:19302";
+        //var stun = "STUN NONE";
 
         if (localInfo.peerCon == null){
             console.log("createPeerConnection")
+            //ブラウザ実装の違いがあるのでいろいろな方法で実装してある
             try {
                 pc = new webkitDeprecatedPeerConnection(stun, onSignalingMessage);
             } catch (e){
