@@ -16,9 +16,6 @@ import paste.urlparser
 #from geventwebsocket.handler import WebSocketHandler
 import random
 
-import cogen.web.wsgi
-import cogen.common 
-
 #テンプレートエンジンを使うためのBaseClass
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
