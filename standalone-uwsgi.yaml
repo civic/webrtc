@@ -1,9 +1,0 @@
-uwsgi:
-    http: :9090
-    virtualenv: env
-    master: true
-    enable-threads: true
-    module: main
-    touch-reload: uwsgiproc
-    callable: app
-
