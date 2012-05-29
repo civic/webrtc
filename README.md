@@ -4,7 +4,7 @@ webrtc
 webRTC python webapp2 demo
 
 
-*depending python library
+## depending python library ##
 
     webapp2
     paste
@@ -12,7 +12,7 @@ webRTC python webapp2 demo
     jinja2
     uwsgi
 
-*chrome webRTC setting
+## chrome webRTC setting ##
     about:flags
 
     check 2 section,
@@ -25,7 +25,7 @@ webRTC python webapp2 demo
 
 
             
-*same network peer connection.
+## same network peer connection. ##
     not to use STUN
         //var stun = "STUN stun.l.google.com:19302";
         var stun = "STUN NONE";
